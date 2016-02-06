@@ -89,13 +89,16 @@ function initializeCastApi() {
 
     var defaultAppId = chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
     var enteredAppId = document.getElementById('appId').value;
+    var sessionRequest = null;
 
-    appendMessage("Found App ID:  '" + enteredAppId + "'");
-    if (!enteredAppId) {
+    if (enteredAppId) {
+        appendMessage("Found App ID:  " + enteredAppId);
+        sessionRequest = new chrome.cast.SessionRequest(enteredAppId);
+    } else {
         appendMessage("Using DEFAULT app id")
+        sessionRequest = new chrome.cast.SessionRequest(defaultAppId);
     }
 
-    var sessionRequest = new chrome.cast.SessionRequest(enteredAppId || defaultAppId);
     var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
         sessionListener,
         receiverListener,
@@ -180,8 +183,21 @@ function receiverListener(e) {
 
 /**
  * launch app and request session
+ * Called on user clicking the launch button.
  */
 function launchApp() {
+
+    if (!chrome.cast || !chrome.cast.isAvailable) {
+        setTimeout(launchApp, 1000);
+    } else {
+        initilaize();
+    }
+}
+
+/**
+ * Only called when chrome.cast.isAvailable
+ */
+function initilaize() {
     initializeCastApi();
     console.log("launching app...");
     appendMessage("launching app...");
